@@ -37,11 +37,11 @@
 </head>
 <body>
 
-    <button id="start-btn"> תלחצי כאן מית מית</button>
+    <button id="start-btn">תלחצי כאן מית מית
     
     <img id="loader-img" class="rotating-image" src="profile.jpg" alt="Loading">
     
-    <div id="status" class="status-text">מחפש את השיר בטבלה...</div>
+    <div id="status" class="status-text">מתחבר לספוטיפיי...</div>
 
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKVvQKAjIln4KGAakwYgyTXwmKRnjoK-XJWtFeJQDx64MgVBXvRrtOMVaOWVH7Br75PlOpDaV0tLZ2/pub?output=csv';
@@ -53,21 +53,20 @@
 
             setTimeout(async () => {
                 try {
-                    const response = await fetch(SHEET_CSV_URL);
+                    // הוספת "חותמת זמן" כדי להכריח את הדפדפן להביא נתונים טריים מהטבלה
+                    const cacheBuster = "&t=" + new Date().getTime();
+                    const response = await fetch(SHEET_CSV_URL + cacheBuster);
                     const data = await response.text();
                     
-                    // מחפש כל תא שמכיל spotify בתוך הטבלה
+                    // חיפוש חכם של הקישור בכל הטבלה
                     const cells = data.split(/[\n,]+/);
                     const foundLink = cells.find(cell => cell.toLowerCase().includes('spotify.com'));
 
                     if (foundLink) {
-                        // ניקוי לינק מגרשיים וסימנים בלתי נראים
                         const cleanUrl = foundLink.replace(/["\r\t]/g, '').trim();
                         window.location.href = cleanUrl;
                     } else {
                         document.getElementById('status').innerText = "לא נמצא קישור ספוטיפיי בטבלה";
-                        // אם לא נמצא, ננסה להציג מה כן נמצא בטבלה לדיבג
-                        console.log("Data received:", data);
                     }
                 } catch (e) {
                     document.getElementById('status').innerText = "שגיאת חיבור לנתונים";
