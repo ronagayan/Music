@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Music</title>
+    <style>
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+
+        /* The Rotating Image */
+        .rotating-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid #1DB954;
+            animation: spin 3s linear infinite;
+            object-fit: cover;
+            display: none; /* Hidden until start is clicked */
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #start-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .status-text {
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="start-btn">Click to Open Today's Song</button>
+
+    <img id="loader-img" class="rotating-image" src="https://imgur.com/a/PSHpIh2" alt="Loading">
+    
+    <div id="status" class="status-text">מתחבר לספוטיפיי...</div>
+
+    <audio id="bg-audio" loop>
+        <source src="YOUR_AUDIO_FILE_URL_HERE" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // CONFIGURATION
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKVvQKAjIln4KGAakwYgyTXwmKRnjoK-XJWtFeJQDx64MgVBXvRrtOMVaOWVH7Br75PlOpDaV0tLZ2/pub?output=csv';
+        
+        const startBtn = document.getElementById('start-btn');
+        const loaderImg = document.getElementById('loader-img');
+        const statusText = document.getElementById('status');
+        const audio = document.getElementById('bg-audio');
+
+        startBtn.addEventListener('click', () => {
+            // 1. Hide button, show loader and text
+            startBtn.style.display = 'none';
+            loaderImg.style.display = 'block';
+            statusText.style.display = 'block';
+
+            // 2. Play Audio
+            audio.play();
+
+            // 3. Fetch link and redirect after 3 seconds
+            setTimeout(fetchAndRedirect, 3000);
+        });
+
+        async function fetchAndRedirect() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const data = await response.text();
+                const rows = data.split('\n');
+                const spotifyUrl = rows[1].trim();
+
+                if (spotifyUrl.includes('spotify.com')) {
+                    window.location.href = spotifyUrl;
+                } else {
+                    statusText.innerText = "Error: Link not found.";
+                }
+            } catch (error) {
+                statusText.innerText = "Error connecting to Sheet.";
+            }
+        }
+    </script>
+</body>
+</html>
+
