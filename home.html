@@ -1,12 +1,25 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>השיר היומי</title>
+    <title>השיר היומי שלי</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; text-align: center; }
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+            text-align: center; 
+        }
         
+        /* עיצוב התמונה המסתובבת */
         .rotating-image { 
             width: 250px; 
             height: 250px; 
@@ -18,8 +31,12 @@
             box-shadow: 0 0 30px rgba(29, 185, 84, 0.4); 
         }
 
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
         
+        /* עיצוב הכפתור */
         #start-btn { 
             padding: 18px 35px; 
             font-size: 1.3rem; 
@@ -30,46 +47,64 @@
             cursor: pointer; 
             font-weight: bold; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
 
-        .status-text { margin-top: 25px; font-size: 1.2rem; display: none; font-weight: 500; }
+        #start-btn:active {
+            transform: scale(0.95);
+        }
+
+        .status-text { 
+            margin-top: 25px; 
+            font-size: 1.2rem; 
+            display: none; 
+            font-weight: 500; 
+        }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">תלחצי כאן מית מית
+    <button id="start-btn">תלחצי כאן מית מית </button>
     
-    <img id="loader-img" class="rotating-image" src="profile.jpg" alt="Loading">
+    <img id="loader-img" class="rotating-image" src="profile.jpg" 
+         onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/ronagayan/Music/main/profile.jpg';">
     
     <div id="status" class="status-text">מתחבר לספוטיפיי...</div>
 
     <script>
+        // קישור ה-CSV שלך
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKVvQKAjIln4KGAakwYgyTXwmKRnjoK-XJWtFeJQDx64MgVBXvRrtOMVaOWVH7Br75PlOpDaV0tLZ2/pub?output=csv';
         
         document.getElementById('start-btn').addEventListener('click', function() {
+            // הסתרת הכפתור והצגת האנימציה
             this.style.display = 'none';
-            document.getElementById('loader-img').style.display = 'block';
-            document.getElementById('status').style.display = 'block';
+            const loaderImg = document.getElementById('loader-img');
+            const statusText = document.getElementById('status');
+            
+            loaderImg.style.display = 'block';
+            statusText.style.display = 'block';
 
+            // המתנה של 3 שניות לפני הפניה (בשביל האפקט)
             setTimeout(async () => {
                 try {
-                    // הוספת "חותמת זמן" כדי להכריח את הדפדפן להביא נתונים טריים מהטבלה
+                    // הוספת Timestamp כדי למנוע זיכרון מטמון (Cache) ולהביא שיר מעודכן
                     const cacheBuster = "&t=" + new Date().getTime();
                     const response = await fetch(SHEET_CSV_URL + cacheBuster);
                     const data = await response.text();
                     
-                    // חיפוש חכם של הקישור בכל הטבלה
+                    // חיפוש חכם של קישור ספוטיפיי בתוך כל תאי הטבלה
                     const cells = data.split(/[\n,]+/);
                     const foundLink = cells.find(cell => cell.toLowerCase().includes('spotify.com'));
 
                     if (foundLink) {
-                        const cleanUrl = foundLink.replace(/["\r\t]/g, '').trim();
+                        // ניקוי הלינק מגרשיים ותווים נסתרים
+                        const cleanUrl = foundLink.replace(/["\r\t\n]/g, '').trim();
                         window.location.href = cleanUrl;
                     } else {
-                        document.getElementById('status').innerText = "לא נמצא קישור ספוטיפיי בטבלה";
+                        statusText.innerText = "שגיאה: לא נמצא קישור ספוטיפיי בטבלה";
                     }
                 } catch (e) {
-                    document.getElementById('status').innerText = "שגיאת חיבור לנתונים";
+                    statusText.innerText = "שגיאת חיבור לנתונים. וודא שהאינטרנט פעיל.";
                 }
             }, 3000);
         });
