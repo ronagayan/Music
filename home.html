@@ -6,19 +6,42 @@
     <title>השיר היומי</title>
     <style>
         body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; text-align: center; }
-        .rotating-image { width: 250px; height: 250px; border-radius: 50%; border: 5px solid #1DB954; animation: spin 3s linear infinite; object-fit: cover; display: none; box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); }
+        
+        .rotating-image { 
+            width: 250px; 
+            height: 250px; 
+            border-radius: 50%; 
+            border: 6px solid #1DB954; 
+            animation: spin 3s linear infinite; 
+            object-fit: cover; 
+            display: none; 
+            box-shadow: 0 0 30px rgba(29, 185, 84, 0.4); 
+        }
+
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        #start-btn { padding: 18px 35px; font-size: 1.3rem; background: #1DB954; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
-        .status-text { margin-top: 25px; font-size: 1.1rem; display: none; }
+        
+        #start-btn { 
+            padding: 18px 35px; 
+            font-size: 1.3rem; 
+            background: #1DB954; 
+            color: white; 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .status-text { margin-top: 25px; font-size: 1.2rem; display: none; font-weight: 500; }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">לחץ לשמיעת השיר היומי</button>
+    <button id="start-btn"> תלחצי כאן מית מית</button>
     
-    <img id="loader-img" class="rotating-image" src="https://raw.githubusercontent.com/ronagayan/Music/main/index.html/../4095.png" onerror="this.src='https://raw.githubusercontent.com/6a69-6d/images/main/4095.png'">
+    <img id="loader-img" class="rotating-image" src="https://i.imgur.com/uW6L5Y2.jpg">
     
-    <div id="status" class="status-text">מתחבר לספוטיפיי...</div>
+    <div id="status" class="status-text">מחפש את השיר בטבלה...</div>
 
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKVvQKAjIln4KGAakwYgyTXwmKRnjoK-XJWtFeJQDx64MgVBXvRrtOMVaOWVH7Br75PlOpDaV0tLZ2/pub?output=csv';
@@ -28,28 +51,26 @@
             document.getElementById('loader-img').style.display = 'block';
             document.getElementById('status').style.display = 'block';
 
-            // טעינה מה-Sheets
             setTimeout(async () => {
                 try {
                     const response = await fetch(SHEET_CSV_URL);
                     const data = await response.text();
-                    const rows = data.split('\n');
                     
-                    // ניקוי לינק אגרסיבי (מוריד גרשיים, רווחים ותווים נסתרים)
-                    if (rows.length > 1) {
-                        let rawUrl = rows[1].split(',')[0];
-                        let cleanUrl = rawUrl.replace(/["\r\n\t]/g, '').trim();
+                    // מחפש כל תא שמכיל spotify בתוך הטבלה
+                    const cells = data.split(/[\n,]+/);
+                    const foundLink = cells.find(cell => cell.toLowerCase().includes('spotify.com'));
 
-                        if (cleanUrl.startsWith('http')) {
-                            window.location.href = cleanUrl;
-                        } else {
-                            document.getElementById('status').innerText = "לא נמצא לינק תקין בטבלה בתא A2";
-                        }
+                    if (foundLink) {
+                        // ניקוי לינק מגרשיים וסימנים בלתי נראים
+                        const cleanUrl = foundLink.replace(/["\r\t]/g, '').trim();
+                        window.location.href = cleanUrl;
                     } else {
-                        document.getElementById('status').innerText = "הטבלה ריקה";
+                        document.getElementById('status').innerText = "לא נמצא קישור ספוטיפיי בטבלה";
+                        // אם לא נמצא, ננסה להציג מה כן נמצא בטבלה לדיבג
+                        console.log("Data received:", data);
                     }
                 } catch (e) {
-                    document.getElementById('status').innerText = "שגיאת חיבור. וודא שהטבלה מפורסמת.";
+                    document.getElementById('status').innerText = "שגיאת חיבור לנתונים";
                 }
             }, 3000);
         });
